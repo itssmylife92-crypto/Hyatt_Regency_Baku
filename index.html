@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<title>Laundry Tracker — Hyatt Regency Baku</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#CC0000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HRB Laundry">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: #000000;
+    color: #ffffff;
+    font-family: system-ui, -apple-system, 'Segoe UI', 'Inter', sans-serif;
+    padding: 10px 6px 40px;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .header-left h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #ffffff, #9ca3af);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .btn-reset {
+    background: transparent;
+    border: 1.5px solid #f87171;
+    color: #f87171;
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+  }
+  .btn-reset:active { background: #f87171; color: white; }
+
+  .save-status {
+    font-size: 12px;
+    color: #4ade80;
+    background: #0a2a0a;
+    padding: 5px 12px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: 0.2s;
+  }
+  .save-status.show { opacity: 1; }
+
+  .section {
+    background: #0d0d0d;
+    border: 1px solid #2a2a2a;
+    border-radius: 18px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .section-title {
+    padding: 14px 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 1.5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: transparent;
+    border-bottom: 1px solid #2a2a2a;
+    color: #4ade80;
+    font-weight: 900;
+    text-shadow: 0 0 4px rgba(74,222,128,0.2);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .date-inline {
+    font-family: system-ui, monospace;
+    text-align: center;
+    background: rgba(0,0,0,0.5);
+    padding: 6px 14px;
+    border-radius: 28px;
+    min-width: 150px;
+    border: 1px solid #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  .date-inline .day {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #4ade80;
+    margin-bottom: 3px;
+  }
+  .date-inline .num {
+    font-size: 17px;
+    font-weight: 800;
+    color: #4ade80;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== СТРОКИ ===== */
+  .rooms-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px 10px;
+    gap: 8px;
+    border-bottom: 1px solid #2a2a2a;
+    width: 100%;
+  }
+  .rooms-row:last-child { border-bottom: none; }
+
+  .rooms-info {
+    flex: 0 0 90px;
+    min-width: 84px;
+    padding-top: 10px;
+  }
+  .item-name {
+    font-weight: 900;
+    font-size: 13px;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.2;
+  }
+  .item-sub {
+    font-size: 13px;
+    font-weight: 800;
+    color: #15803d;
+    margin-top: 2px;
+    line-height: 1.2;
+    font-family: system-ui, 'Segoe UI', -apple-system, sans-serif;
+  }
+
+  /* ===== ОБЁРТКА ВВОДА + ИТОГ ===== */
+  .rooms-input-wrap {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .expr-input {
+    width: 100%;
+    background: #161616;
+    border: 1.5px solid #333;
+    border-radius: 12px;
+    color: #ffffff;
+    font-family: monospace;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 12px 14px;
+    letter-spacing: 0.5px;
+    resize: none;
+    overflow: hidden;
+    min-height: 52px;
+    line-height: 1.4;
+    display: block;
+  }
+  .expr-input:focus { outline: none; border-color: #15803d; }
+  .expr-input.error { border-color: #f87171; color: #f87171; }
+
+  /* итог под полем */
+  .row-total-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 0 4px;
+  }
+  .row-total-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .row-total {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    color: #4ade80;
+    line-height: 1;
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 8px 4px 30px; font-size: 13px; }
+    .header-left h1 { font-size: 24px; }
+    .btn-reset { padding: 6px 12px; font-size: 11px; }
+    .save-status { font-size: 10px; padding: 4px 10px; }
+    .section-title { font-size: 20px; padding: 10px 12px; color: #4ade80; }
+    .rooms-info { flex: 0 0 80px; min-width: 76px; }
+    .item-name { font-size: 11px; }
+    .item-sub { font-size: 11px; }
+    .expr-input { font-size: 19px; padding: 10px 12px; min-height: 46px; }
+    .row-total { font-size: 22px; }
+    .date-inline { padding: 5px 12px; min-width: 135px; }
+    .date-inline .day { font-size: 11px; }
+    .date-inline .num { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left"><h1>🏨 Laundry Tracker</h1></div>
+  <div style="display: flex; gap: 8px; align-items: center;">
+    <span class="save-status" id="saveStatus">💾 СОХРАНЕНО</span>
+    <button class="btn-reset" id="resetBtn">⟳ СБРОС</button>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">
+    <span>ROOMS HRB</span>
+    <div class="date-inline" id="inlineDate">—</div>
+  </div>
+  <div id="bodyRooms"></div>
+</div>
+
+<script>
+  const ITEMS = [
+    { en: 'PILLOW CASE', az: 'Baliş üzü' },
+    { en: 'SHEET',       az: 'Mələfə' },
+    { en: 'DUVET COVER', az: 'Yorğan üzü' },
+    { en: 'SMALL TOWEL', az: 'Balaca dəsmal' },
+    { en: 'BATH TOWEL',  az: 'Orta dəsmal' },
+    { en: 'BATHROBE',    az: 'Xalat' }
+  ];
+
+  const DAYS_RU = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+
+  // ========== LOCALSTORAGE ==========
+  let savedData = { rooms: {} };
+
+  function loadFromLocalStorage() {
+    try {
+      const raw = localStorage.getItem('laundry_tracker');
+      if (raw) {
+        const loaded = JSON.parse(raw);
+        if (loaded.rooms) savedData.rooms = loaded.rooms;
+      }
+    } catch(e) { console.warn(e); }
+  }
+
+  function saveToLocalStorage() {
+    ITEMS.forEach((_, idx) => {
+      const r = document.getElementById(`ri_${idx}`);
+      if (r) savedData.rooms[idx] = r.value;
+    });
+    localStorage.setItem('laundry_tracker', JSON.stringify(savedData));
+    const status = document.getElementById('saveStatus');
+    status.classList.add('show');
+    clearTimeout(window._saveStatusTimer);
+    window._saveStatusTimer = setTimeout(() => status.classList.remove('show'), 800);
+  }
+
+  window.addEventListener('beforeunload', saveToLocalStorage);
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveToLocalStorage();
+  });
+
+  // ========== ПАРСИНГ ==========
+  function parseExpr(val) {
+    if (!val || val.trim() === '') return 0;
+    const cleaned = val.replace(/[^\d+]/g, '').replace(/^\+/, '').replace(/\+$/, '');
+    if (!cleaned) return 0;
+    let sum = 0;
+    for (const p of cleaned.split('+')) {
+      const n = parseInt(p, 10);
+      if (!isNaN(n)) sum += n;
+    }
+    return sum;
+  }
+
+  // ========== ДАТА ==========
+  function updateInlineDate() {
+    const now = new Date();
+    const el = document.getElementById('inlineDate');
+    if (!el) return;
+    const d = String(now.getDate()).padStart(2, '0');
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    el.innerHTML = `<div class="day">${DAYS_RU[now.getDay()]}</div><div class="num">${d}-${m}-${now.getFullYear()}</div>`;
+  }
+  updateInlineDate();
+  setInterval(updateInlineDate, 60000);
+
+  // ========== AUTO-RESIZE TEXTAREA ==========
+  function autoResize(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  }
+
+  // ========== ПЕРЕСЧЁТ ==========
+  function calcRooms() {
+    ITEMS.forEach((_, idx) => {
+      const inp = document.getElementById(`ri_${idx}`);
+      const tot = document.getElementById(`rt_r_${idx}`);
+      if (!inp || !tot) return;
+      tot.textContent = parseExpr(inp.value);
+    });
+  }
+
+  // ========== СТРОИМ HTML ==========
+  function attachTextarea(ta, saveFn) {
+    ta.addEventListener('input', () => {
+      autoResize(ta);
+      saveFn(ta.value);
+    });
+    ta.addEventListener('change', () => { saveFn(ta.value); });
+    ta.addEventListener('blur', () => {
+      const v = ta.value.trim();
+      if (v && /\d$/.test(v)) {
+        ta.value = v + '+';
+        autoResize(ta);
+      }
+      saveFn(ta.value);
+    });
+  }
+
+  function buildRooms() {
+    const container = document.getElementById('bodyRooms');
+    container.innerHTML = '';
+    ITEMS.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'rooms-row';
+      row.innerHTML = `
+        <div class="rooms-info">
+          <div class="item-name">${item.en}</div>
+          <div class="item-sub">${item.az}</div>
+        </div>
+        <div class="rooms-input-wrap">
+          <textarea class="expr-input" id="ri_${idx}" placeholder=" " rows="1">${escapeHtml(savedData.rooms[idx] || '')}</textarea>
+          <div class="row-total-bar">
+            <span class="row-total-label">итог</span>
+            <span class="row-total" id="rt_r_${idx}">0</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(row);
+      const ta = document.getElementById(`ri_${idx}`);
+      attachTextarea(ta, val => { savedData.rooms[idx] = val; saveToLocalStorage(); calcRooms(); });
+    });
+    // resize всех textarea после рендера
+    requestAnimationFrame(() => {
+      ITEMS.forEach((_, idx) => {
+        const ta = document.getElementById(`ri_${idx}`);
+        if (ta) autoResize(ta);
+      });
+      calcRooms();
+    });
+  }
+
+  // ========== СБРОС ==========
+  function resetAll() {
+    const ok = confirm('⚠️ ВЫ УВЕРЕНЫ?\n\nВСЕ данные будут удалены без возможности восстановления.');
+    if (!ok) return;
+    savedData = { rooms: {} };
+    localStorage.removeItem('laundry_tracker');
+    buildRooms();
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // ========== ЗАПУСК ==========
+  loadFromLocalStorage();
+  buildRooms();
+  document.getElementById('resetBtn').onclick = resetAll;
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
